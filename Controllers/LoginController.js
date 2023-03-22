@@ -48,6 +48,7 @@ const loginUser = async (req, res) => {
     try {
         if (req.body.password) {
             let searchUser = await UserSchema.findOne({ email: req.body.email })
+            console.log(searchUser)
             if (!searchUser) {
                 searchUser = await InvesterLogin.findOne({ email: req.body.email })
                 if (!searchUser) {
@@ -56,6 +57,7 @@ const loginUser = async (req, res) => {
             }
             const hash = searchUser.password
             const match = await bcrypt.compare(req.body.password, hash)
+            
             if (!match) return res.status(401).json({ msg: "Wrong Password", success: false })
             const data = {
                 user: {
@@ -63,8 +65,10 @@ const loginUser = async (req, res) => {
                     id: searchUser._id,
                 }
             }
+            console.log(data)
+            console.log(process.env.JWT_SECRET)
             const authToken = jwt.sign(data, process.env.JWT_SECRET);
-            res.status(200).json({ authToken, success: true });
+            res.status(200).json({ authToken,user:searchUser,success: true });
             return;
         }
         res.status(500).json({ color: "red", msg: "Enter Password", success: false });
